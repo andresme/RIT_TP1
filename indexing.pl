@@ -8,11 +8,16 @@ $fileDir = @ARGV[1];
 $filePattern = @ARGV[2];
 $prefix = @ARGV[3];
 
+#Files
+open(FREQFILE, ">>$prefix"."_FC") or die "$!";
+open(STOPWORDS, "./$stopwords") or die "$!";
+open(VOCFILE, ">>$prefix"."_VO") or die "$!";
+
 #Global variables
 %Vocabulary = ();
 
 #Setup stopwords from file
-open(STOPWORDS, "./$stopwords") or die "$!";
+
 @stopwords = <STOPWORDS>;
 chop(@stopwords);
 
@@ -26,7 +31,7 @@ sub main{
 		opendir(DIR, "./$fileDir/$folder") or die "$!";
 		@files = grep /$filePattern/, readdir DIR;
 		foreach $file (sort @files){
-			print "$file\n";
+			print "generating index for file: $file...\n";
 			analyzeFile("$fileDir/$folder/$file");
 		}
 	}
@@ -49,13 +54,10 @@ sub freqFile{
 	@terms = ();
 	%fileVocabulary = ();
 	
-	open(FREQFILE, ">>$prefix"."_FC") or die "$!";
 	open(FILE, "./$file") or die "$!";
 
 	@file = <FILE>;
 	chop(@file);
-	
-	print FREQFILE @terms;
 	
 	foreach $term (@file){
 		#Quita las tildes!!
@@ -116,7 +118,7 @@ sub weightFile{
 }
 
 sub vocabularyFile{
-	open(VOCFILE, ">>$prefix"."_VO") or die "$!";
+	print "Writing vocabulary file: $prefix"."_VO\n";
 	foreach $key (sort keys %Vocabulary){
 		print VOCFILE "$key , $Vocabulary{$key}\n";
 	}
