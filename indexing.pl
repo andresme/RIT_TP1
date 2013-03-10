@@ -2,22 +2,35 @@
 
 use utf8;
 
-open(STOPWORDS, "./stopwords.txt") or die "$!";
+#Arguments
+$stopwords = @ARGV[0];
+$fileDir = @ARGV[1];
+$filePattern = @ARGV[2];
+$prefix = @ARGV[3];
+
+#Global variables
+%Vocabulary = ();
+
+#Setup stopwords from file
+open(STOPWORDS, "./$stopwords") or die "$!";
 @stopwords = <STOPWORDS>;
 chop(@stopwords);
+
+#Start
 main();
 
 sub main{
-	opendir(DIR, "./man.es") or die "$!";
+	opendir(DIR, "./$fileDir") or die "$!";
 	@directories = grep /\w.*/, readdir DIR;
 	foreach $folder (sort @directories) {
-		opendir(DIR, "./man.es/$folder") or die "$!";
-		@files = grep /.*\.txt/, readdir DIR;
+		opendir(DIR, "./$fileDir/$folder") or die "$!";
+		@files = grep /$filePattern/, readdir DIR;
 		foreach $file (sort @files){
 			print "$file\n";
-			analyzeFile("man.es/$folder/$file");
+			analyzeFile("$fileDir/$folder/$file");
 		}
 	}
+	vocabularyFile();
 }
 
 
@@ -25,7 +38,6 @@ sub analyzeFile{
 	$file = $_[0];
 	freqFile($file);
 	weightFile($file);
-	vocabularyFile($file);
 }
 
 
@@ -37,7 +49,7 @@ sub freqFile{
 	@terms = ();
 	%fileVocabulary = ();
 	
-	open(FREQFILE, ">>freqFile.txt") or die "$!";
+	open(FREQFILE, ">>$prefix"."_FC") or die "$!";
 	open(FILE, "./$file") or die "$!";
 
 	@file = <FILE>;
@@ -90,6 +102,7 @@ sub freqFile{
 	foreach $key (sort keys %fileVocabulary){
 		$word = $key;
 		$cant = $fileVocabulary{$key};
+		$Vocabulary{$key}++;
 		print FREQFILE "($word, $cant) ";
 	}
 	
@@ -103,5 +116,8 @@ sub weightFile{
 }
 
 sub vocabularyFile{
-	
+	open(VOCFILE, ">>$prefix"."_VO") or die "$!";
+	foreach $key (sort keys %Vocabulary){
+		print VOCFILE "$key , $Vocabulary{$key}\n";
+	}
 }
