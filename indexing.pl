@@ -42,12 +42,9 @@ sub main{
 	close(VOCFILE);
 	open(VOCFILE, "$prefix"."_VO") or die "$!";
 	weightFile();
-	
 }
 
 #Generate the frequency file
-#Format:
-#relative path|total terms|most repetitions|(term,frequency)
 sub freqFile{
 	$file = $_[0];
 	$number = 0;
@@ -55,12 +52,10 @@ sub freqFile{
 	@file = ();
 	@terms = ();
 	%fileVocabulary = ();
-	
+
 	open(FILE, "./$file") or die "$!";
-	
 	@file = <FILE>;
 	chop(@file);
-	
 	print "Generating index for file: $file...\n";
 	
 	foreach $term (@file){
@@ -70,13 +65,10 @@ sub freqFile{
 		$term =~ s/[Íí]/i/g;
 		$term =~ s/[Óó]/o/g;
 		$term =~ s/[Úú]/u/g;
-		
 		#remove numbers (not words)
 		$term =~ s/\b[0-9]+\b//g;
-		
 		#lower case everything
 		$term = lc($term);
-		
 		#removes stopwords
 		foreach $stopword (@stopwords){
 			$term =~ s/\b$stopword\b//g;
@@ -88,7 +80,6 @@ sub freqFile{
 		foreach $term (@words){
 			$fileVocabulary{$term}++;
 		}
-		
 	}
 	#gets total terms in document
 	@keys = keys %fileVocabulary;
@@ -114,19 +105,12 @@ sub freqFile{
 		$Vocabulary{$key}++;
 		print FREQFILE "($key,$fileVocabulary{$key})";
 	}
-	
-	#new line for next document
 	print FREQFILE "\n"
-	
 }
 
 #Generate the weight file
-#Format:
-#relative path|total terms|Norm of vector|(term,weight)
 sub weightFile{
 	@freqs = <FREQFILE>;
-	
-	
 	#Total documents
 	$nDocuments = @freqs;
 	
@@ -157,10 +141,9 @@ sub weightFile{
 			$weights{$term} = ((1+log2($freq))*log2($nDocuments/$Vocabulary{$term}));
 		}
 		
-		#Calculates the norm of the vector
-		#square root of the sum of the weights
+		#Calculates the norm of the vector, square root of the sum of the weights
 		foreach $term (sort keys %weights){
-			$NormVect += pow2($weights{$term});
+			$NormVect += ($weights{$term}*$weights{$term});
 		}
 		
 		#round to 2 decimals
@@ -173,26 +156,16 @@ sub weightFile{
 			$rounded = sprintf("%.2f", $weights{$term});
 			print WEIGHTFILE "(".$term.",".$rounded.")";
 		}
-		
 		print WEIGHTFILE "\n";
 	}
-	
 }
 
 #Generate the vocabulary file
-#Format:
-#Term,number of documents that contain that term.
 sub vocabularyFile{
 	print "Writing vocabulary file: $prefix"."_VO\n";
 	foreach $key (sort keys %Vocabulary){
 		print VOCFILE "$key,$Vocabulary{$key}\n";
 	}
-}
-
-#power of n^2
-sub pow2{
-	$number = $_[0];
-	return $number*$number;
 }
 
 #Log base two
