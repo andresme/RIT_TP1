@@ -31,4 +31,4 @@ Vocabulary File
 Each line of the frequency and the weight file are one document of the collection.
 
 To invoke this tool you need to call it from terminal as follows:
-        ./generar file_with_stopwords path_to_subfolders 'pattern of files to analyze' prefix_for_files_to_create
+	./generar file_with_stopwords path_to_subfolders 'pattern of files to analyze' prefix_for_files_to_create
