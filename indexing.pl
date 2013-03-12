@@ -1,12 +1,12 @@
-#!usr/bin/perl
+#!/usr/bin/perl -w
 
 use utf8;
 
 #Arguments
-$stopwords = @ARGV[0];
-$fileDir = @ARGV[1];
-$filePattern = @ARGV[2];
-$prefix = @ARGV[3];
+$stopwords = $ARGV[0];
+$fileDir = $ARGV[1];
+$filePattern = $ARGV[2];
+$prefix = $ARGV[3];
 
 #Files Handlers
 open(STOPWORDS, "./$stopwords") or die "$!";
@@ -18,10 +18,23 @@ open(WEIGHTFILE, ">>$prefix"."_PO") or die "$!";
 %Vocabulary = ();
 @stopwords = ();
 
-#Start
-main();
+#Main
+print "Generating $prefix"."_FC...\n";
+freqFile();
 
-sub main{
+print "Generating $prefix"."_VO...\n";
+close(FREQFILE);
+open(FREQFILE, "$prefix"."_FC") or die "$!";
+vocabularyFile();
+
+print "Generating $prefix"."_PO...\n";
+close(VOCFILE);
+open(VOCFILE, "$prefix"."_VO") or die "$!";
+weightFile();
+
+#Main Functions:
+#Generate the frequency file
+sub freqFile{
 	#Setup stopwords from file
 	@stopwords = <STOPWORDS>;
 	chop(@stopwords);
@@ -33,22 +46,16 @@ sub main{
 		#search for all files with pattern in subfolder
 		@files = grep /$filePattern/, readdir DIR;
 		foreach $file (sort @files){
-			freqFile("$fileDir/$folder/$file");
+			freqFileAnalyze("$fileDir/$folder/$file");
 		}
 	}
-	close(FREQFILE);
-	open(FREQFILE, "$prefix"."_FC") or die "$!";
-	vocabularyFile();
-	close(VOCFILE);
-	open(VOCFILE, "$prefix"."_VO") or die "$!";
-	weightFile();
 }
 
-#Generate the frequency file
-sub freqFile{
+
+sub freqFileAnalyze{
 	$file = $_[0];
 	$number = 0;
-	$lastword = "";
+	#$lastword = "";
 	@file = ();
 	@terms = ();
 	%fileVocabulary = ();
@@ -56,7 +63,6 @@ sub freqFile{
 	open(FILE, "./$file") or die "$!";
 	@file = <FILE>;
 	chop(@file);
-	print "Generating index for file: $file...\n";
 	
 	foreach $term (@file){
 		#Clean accents from file
@@ -124,7 +130,6 @@ sub weightFile{
 		m/(^.+\.txt)\|([0-9]+)/g;
 		$file = $1;
 		$maxTerms = $2;
-		print "Generating weight for file: $file\n";
 		print WEIGHTFILE "$file|$maxTerms|";
 		
 		#Get all the pairs (term, frequency) in freqLine.
@@ -162,12 +167,12 @@ sub weightFile{
 
 #Generate the vocabulary file
 sub vocabularyFile{
-	print "Writing vocabulary file: $prefix"."_VO\n";
 	foreach $key (sort keys %Vocabulary){
 		print VOCFILE "$key,$Vocabulary{$key}\n";
 	}
 }
 
+#Aritmethic functions:
 #Log base two
 sub log2 {
 	$number = $_[0];
