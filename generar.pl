@@ -32,7 +32,7 @@ close(VOCFILE);
 open(VOCFILE, "$prefix"."_VO") or die "$!";
 weightFile();
 
-#Main Functions:
+#############################Main Functions:############################
 #Generate the frequency file
 sub freqFile{
 	#Setup stopwords from file
@@ -172,7 +172,7 @@ sub vocabularyFile{
 	}
 }
 
-#Aritmethic functions:
+####################Aritmethic functions:###############################
 #Log base two
 sub log2 {
 	$number = $_[0];
