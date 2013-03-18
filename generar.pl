@@ -55,14 +55,14 @@ sub freqFile{
 sub freqFileAnalyze{
 	$file = $_[0];
 	$number = 0;
-	#$lastword = "";
+	$lastword = undef;
+	$appended = undef;
 	@file = ();
 	@terms = ();
 	%fileVocabulary = ();
 
 	open(FILE, "./$file") or die "$!";
 	@file = <FILE>;
-	chop(@file);
 	
 	foreach $term (@file){
 		#Clean accents from file
@@ -75,16 +75,38 @@ sub freqFileAnalyze{
 		$term =~ s/\b[0-9]+\b//g;
 		#lower case everything
 		$term = lc($term);
+		
 		#removes stopwords
 		foreach $stopword (@stopwords){
 			$term =~ s/\b$stopword\b//g;
 		}
 		
+		#get the first word to append last of previous if lastword.
+		if($lastword){
+			$_ = $term;
+			m/^\s*([a-z0-9_]+)\b/g;
+			$firstword = $1;
+			$term =~ s/^\s*[a-z0-9_]+\b//g;
+			$appended = "$lastword"."$firstword";
+			$lastword = undef;
+		}
+		
+		#get the last word in line if "-".
+		$_ = $term;
+		if(m/\b([a-z0-9_]+)\b\-\s*$/g){
+			$lastword = $1;
+			$term =~ s/\b[a-z0-9_]+\b\-\s*$//g;
+		}
+		
 		#get the words (patter: [a-z0-9_]).
 		$_ = $term;
-		@words = m/(\b[a-z0-9_]+\b)/g;
+		@words = m/\b[a-z0-9_]+\b/g;
 		foreach $term (@words){
 			$fileVocabulary{$term}++;
+		}
+		
+		if($appended){
+			$fileVocabulary{$appended}++;
 		}
 	}
 	#gets total terms in document
@@ -149,8 +171,7 @@ sub weightFile{
 		#Calculates the norm of the vector, square root of the sum of the weights
 		foreach $term (sort keys %weights){
 			$NormVect += ($weights{$term}*$weights{$term});
-		}
-		
+		}		
 		#round to 2 decimals
 		$rounded = sprintf("%.2f", sqrt($NormVect));
 		print WEIGHTFILE $rounded."|";
@@ -164,14 +185,12 @@ sub weightFile{
 		print WEIGHTFILE "\n";
 	}
 }
-
 #Generate the vocabulary file
 sub vocabularyFile{
 	foreach $key (sort keys %Vocabulary){
 		print VOCFILE "$key,$Vocabulary{$key}\n";
 	}
 }
-
 ####################Aritmethic functions:###############################
 #Log base two
 sub log2 {
