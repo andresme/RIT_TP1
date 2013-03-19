@@ -74,8 +74,7 @@ sub freqFileAnalyze{
 		#lower case everything
 		$term = lc($term);
 		
-		
-		#checks for "-" at the end.
+		#appends last word with first word if "-"
 		if($lastword){
 			$_ = $term;
 			m/^\s*[^a-z0-9_]\b([a-z0-9_]+)\b/g;
@@ -88,15 +87,13 @@ sub freqFileAnalyze{
 			$lastword = undef;
 			$appended = undef;
 		}
-
 		$_ = $term;
 		if(m/\b([a-z0-9_]+)-\s*$/g){
 			$lastword = $1;
 			$term =~ s/\b[a-z0-9_]+\b\-\s*\n//g;
 		}
 		
-		
-		#removes stopwords
+		#removes stopwords after seeking for separated words
 		foreach $stopword (@stopwords){
 			$term =~ s/\b$stopword\b//g;
 		}
@@ -127,7 +124,6 @@ sub freqFileAnalyze{
 	
 	#prints that number to file
 	print FREQFILE "$number|";
-	
 	#prints pairs (term, frequency) to freqfile
 	foreach $key (sort keys %fileVocabulary){
 		$Vocabulary{$key}++;
