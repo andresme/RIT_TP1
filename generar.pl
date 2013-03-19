@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 
 use utf8;
+use File::Find;
 
 #Arguments
 $stopwords = $ARGV[0];
@@ -17,6 +18,7 @@ open(WEIGHTFILE, ">>$prefix"."_PO") or die "$!";
 #Global variables
 %Vocabulary = ();
 @stopwords = ();
+@files = ();
 
 #Main
 print "Generating $prefix"."_FC...\n";
@@ -38,19 +40,15 @@ sub freqFile{
 	#Setup stopwords from file
 	@stopwords = <STOPWORDS>;
 	chop(@stopwords);
-	opendir(DIR, "./$fileDir") or die "$!";
-	#search all subfolders
-	@directories = grep /\w.*/, readdir DIR;
-	foreach $folder (sort @directories) {
-		opendir(DIR, "./$fileDir/$folder") or die "$!";
-		#search for all files with pattern in subfolder
-		@files = grep /$filePattern/, readdir DIR;
-		foreach $file (sort @files){
-			freqFileAnalyze("$fileDir/$folder/$file");
-		}
+	find( \&findFiles, $fileDir);
+	foreach $file (sort @files){
+		freqFileAnalyze("$file");
 	}
 }
 
+sub findFiles{
+	push @files, $File::Find::name if(/$filePattern/i);
+}
 
 sub freqFileAnalyze{
 	$file = $_[0];
