@@ -76,26 +76,31 @@ sub freqFileAnalyze{
 		#lower case everything
 		$term = lc($term);
 		
+		
+		#checks for "-" at the end.
+		if($lastword){
+			$_ = $term;
+			m/^\s*[^a-z0-9_]\b([a-z0-9_]+)\b/g;
+			$firstword = $1;
+			if(!$1){
+				$firstword = " ";
+			}
+			$appended = $lastword.$firstword;
+			$term =~ s/^\s*[^a-z0-9_]\b([a-z0-9_]+)\b/$appended/g;
+			$lastword = undef;
+			$appended = undef;
+		}
+
+		$_ = $term;
+		if(m/\b([a-z0-9_]+)-\s*$/g){
+			$lastword = $1;
+			$term =~ s/\b[a-z0-9_]+\b\-\s*\n//g;
+		}
+		
+		
 		#removes stopwords
 		foreach $stopword (@stopwords){
 			$term =~ s/\b$stopword\b//g;
-		}
-		
-		#get the first word to append last of previous if lastword.
-		if($lastword){
-			$_ = $term;
-			m/^\s*([a-z0-9_]+)\b/g;
-			$firstword = $1;
-			$term =~ s/^\s*[a-z0-9_]+\b//g;
-			$appended = "$lastword"."$firstword";
-			$lastword = undef;
-		}
-		
-		#get the last word in line if "-".
-		$_ = $term;
-		if(m/\b([a-z0-9_]+)\b\-\s*$/g){
-			$lastword = $1;
-			$term =~ s/\b[a-z0-9_]+\b\-\s*$//g;
 		}
 		
 		#get the words (patter: [a-z0-9_]).
@@ -105,9 +110,6 @@ sub freqFileAnalyze{
 			$fileVocabulary{$term}++;
 		}
 		
-		if($appended){
-			$fileVocabulary{$appended}++;
-		}
 	}
 	#gets total terms in document
 	@keys = keys %fileVocabulary;
