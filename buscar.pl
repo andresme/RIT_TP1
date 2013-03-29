@@ -77,25 +77,48 @@ sub printRanking{
 		print HTML $line;
 	}
 	foreach $sim (sort {$Similarity{$b} cmp $Similarity{$a}} keys %Similarity){
-		last if($pos++ >= $end);
-		if($pos >= $begin){
+		if($pos++ >= $end){
+			print RANK $sim.":".$Similarity{$sim}."\n";
+		}
+		elsif($pos >= $begin){
+			print RANK $sim.":".$Similarity{$sim}."\n";
 			#File Information
 			$creation = POSIX::strftime("%d/%m/%y", localtime((stat "./$sim")[9]));
 			$fileSize = (stat "./$sim")[7];
 			open(FILE, "./$sim");
-			@file = <FILE>;
 			$lines = @file;
+			$terms = 0;
+			foreach $line (@freqFile){
+				$_ = $line;
+				if(m/$sim\|([0-9]+)\|[0-9]+/){
+					$terms = $1;
+				}
+			}
+			#gets file loaded into string
+			$document = do {
+				local $/ = undef;
+				open my $FILE, "<", $sim or die "could not open $sim: $!";
+				<$FILE>;
+			};
+			#delets tabs and spaces, prints just one space instead
+			$document =~ s/[ \t]+/ /g;
+			#removes newlines and add three whitespaces
+			$document =~ s/[\n\r]+/   /g;
+			#gets 200 chars
+			$document = substr($document, 0, 200);
 			
 			#Print to file
-			print HTML "<li>$pos: <a href=\"".File::Spec->rel2abs($sim)."\">$sim</a>\n";
+			print HTML "<li>$pos: $sim \n";
 			print HTML "	<ul>";
+			print HTML "		<li>Link: <a href=\"".File::Spec->rel2abs($sim)."\">Click para abrir el archivo</a></li>\n";
 			print HTML "		<li>Similaridad: $Similarity{$sim}</li>\n";
 			print HTML "		<li>Fecha Creacion: $creation</li>\n";
 			print HTML "		<li>Tamano: $fileSize bytes</li>\n";
 			print HTML "		<li>Lineas: $lines</li>\n";
+			print HTML "		<li>Palabras diferentes: $terms</li>\n";
 			print HTML "		<li>Primeros 200 caracteres:\n";
 			print HTML "		<ul><li>\n";
-			print HTML "			<span>abcd...</span>\n";
+			print HTML "			<PRE><span><small>$document</small></span></PRE>\n";
 			print HTML "		</li></ul>\n";
 			print HTML "	</li>\n";
 			print HTML "</ul></li>\n";
@@ -104,6 +127,7 @@ sub printRanking{
 	foreach $line (@footer){
 		print HTML $line;
 	}
+	open_default_browser("Results/$prefixQuery"."_$htmlFile.html") or die $!;
 }
 
 sub searchVect{
