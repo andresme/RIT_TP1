@@ -2,6 +2,7 @@
 
 use utf8;
 use POSIX;
+use File::Spec;
 require 'utils.pl';
 
 #Arguments
@@ -15,11 +16,11 @@ $htmlFile = $ARGV[6];
 $query = $ARGV[7];
 
 #File Handlers; File creation
-open(RANK, ">>$prefixQuery"."_$rankFile") or die $!;
-open(HTML, ">>$prefixQuery"."_$htmlFile.html") or die $!;
-open(FC, "$prefix"."_FC") or die $!;
-open(VO, "$prefix"."_VO") or die $!;
-open(PO, "$prefix"."_PO") or die $!;
+open(RANK, ">>Results/$prefixQuery"."_$rankFile") or die $!;
+open(HTML, ">>Results/$prefixQuery"."_$htmlFile.html") or die $!;
+open(FC, "Results/$prefix"."_FC") or die $!;
+open(VO, "Results/$prefix"."_VO") or die $!;
+open(PO, "Results/$prefix"."_PO") or die $!;
 
 #Global Variables
 %Vocabulary = ();
@@ -68,6 +69,13 @@ sub getTerms{
 #Prints the result ranking
 sub printRanking{
 	$pos = 0;
+	open(HEADER, "./Templates/header_html") or die $!;
+	open(FOOTER, "./Templates/footer_html") or die $!;
+	@header = <HEADER>;
+	@footer = <FOOTER>;
+	foreach $line (@header){
+		print HTML $line;
+	}
 	foreach $sim (sort {$Similarity{$b} cmp $Similarity{$a}} keys %Similarity){
 		last if($pos++ >= $end);
 		if($pos >= $begin){
@@ -79,15 +87,22 @@ sub printRanking{
 			$lines = @file;
 			
 			#Print to file
-			print HTML "<li>$pos: <a href=\"$sim\">$sim</a>\n";
-			print HTML "<ul>Similaridad: $Similarity{$sim}</ul>\n";
-			print HTML "<ul>Fecha Creación: $creation</ul>";
-			print HTML "<ul>Tamaño: $fileSize bytes</ul>";
-			print HTML "<ul>Lineas: $lines</ul>";
-			print HTML "<ul>Primeros 200 caracteres:\n</ul>";
-			print HTML "<span>abcd...</span>";
-			print HTML "<\li>\n";
+			print HTML "<li>$pos: <a href=\"".File::Spec->rel2abs($sim)."\">$sim</a>\n";
+			print HTML "	<ul>";
+			print HTML "		<li>Similaridad: $Similarity{$sim}</li>\n";
+			print HTML "		<li>Fecha Creacion: $creation</li>\n";
+			print HTML "		<li>Tamano: $fileSize bytes</li>\n";
+			print HTML "		<li>Lineas: $lines</li>\n";
+			print HTML "		<li>Primeros 200 caracteres:\n";
+			print HTML "		<ul><li>\n";
+			print HTML "			<span>abcd...</span>\n";
+			print HTML "		</li></ul>\n";
+			print HTML "	</li>\n";
+			print HTML "</ul></li>\n";
 		}
+	}
+	foreach $line (@footer){
+		print HTML $line;
 	}
 }
 

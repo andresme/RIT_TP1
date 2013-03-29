@@ -12,9 +12,9 @@ $prefix = $ARGV[3];
 
 #Files Handlers
 open(STOPWORDS, "./$stopwords") or die "$!";
-open(FREQFILE, ">>$prefix"."_FC") or die "$!";
-open(VOCFILE, ">>$prefix"."_VO") or die "$!";
-open(WEIGHTFILE, ">>$prefix"."_PO") or die "$!";
+open(FREQFILE, ">>Results/$prefix"."_FC") or die "$!";
+open(VOCFILE, ">>Results/$prefix"."_VO") or die "$!";
+open(WEIGHTFILE, ">>Results/$prefix"."_PO") or die "$!";
 
 #Global variables
 %Vocabulary = ();
@@ -22,17 +22,17 @@ open(WEIGHTFILE, ">>$prefix"."_PO") or die "$!";
 @files = ();
 
 #Main
-print "Generating $prefix"."_FC...\n";
+print "Generating Results/$prefix"."_FC...\n";
 freqFile();
 
-print "Generating $prefix"."_VO...\n";
+print "Generating Results/$prefix"."_VO...\n";
 close(FREQFILE);
-open(FREQFILE, "$prefix"."_FC") or die "$!";
+open(FREQFILE, "Results/$prefix"."_FC") or die "$!";
 vocabularyFile();
 
-print "Generating $prefix"."_PO...\n";
+print "Generating Results/$prefix"."_PO...\n";
 close(VOCFILE);
-open(VOCFILE, "$prefix"."_VO") or die "$!";
+open(VOCFILE, "Results/$prefix"."_VO") or die "$!";
 weightFile();
 
 #############################Main Functions:############################
