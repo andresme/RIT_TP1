@@ -2,6 +2,7 @@
 
 use utf8;
 use File::Find;
+require 'utils.pl';
 
 #Arguments
 $stopwords = $ARGV[0];
@@ -40,7 +41,7 @@ sub freqFile{
 	#Setup stopwords from file
 	@stopwords = <STOPWORDS>;
 	chop(@stopwords);
-	find( \&findFiles, $fileDir);
+	find(\&findFiles, $fileDir);
 	foreach $file (sort @files){
 		freqFileAnalyze("$file");
 	}
@@ -87,6 +88,7 @@ sub freqFileAnalyze{
 			$lastword = undef;
 			$appended = undef;
 		}
+		
 		$_ = $term;
 		if(m/\b([a-z0-9_]+)-\s*$/g){
 			$lastword = $1;
@@ -187,9 +189,4 @@ sub vocabularyFile{
 		print VOCFILE "$key,$Vocabulary{$key}\n";
 	}
 }
-####################Aritmethic functions:###############################
-#Log base two
-sub log2 {
-	$number = $_[0];
-	return log($number)/log(2);
-}
+
