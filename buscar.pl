@@ -34,7 +34,6 @@ $nDocuments = @weightFile;
 #Start
 commandSearch();
 
-
 sub commandSearch{
 	if($mod eq 'vec'){
 		loadVocabulary();
@@ -186,7 +185,7 @@ sub searchVect{
 	}
 }
 
-
 sub searchMin{
 	print "Searching using minimum model\n";
+	
 }
