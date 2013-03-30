@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl -    
 
 #########################################################
 #File: generar.pl										#
@@ -15,20 +15,20 @@ use File::Find;
 require 'utils.pl';
 
 #Arguments
-$stopwords = $ARGV[0];
+$stop    ords = $ARGV[0];
 $fileDir = $ARGV[1];
 $filePattern = $ARGV[2];
 $prefix = $ARGV[3];
 
 #Files Handlers
-open(STOPWORDS, "./$stopwords") or die "$!";
+open(STOP    ORDS, "./$stop    ords") or die "$!";
 open(FREQFILE, ">>Results/$prefix"."_FC") or die "$!";
 open(VOCFILE, ">>Results/$prefix"."_VO") or die "$!";
-open(WEIGHTFILE, ">>Results/$prefix"."_PO") or die "$!";
+open(    EIGHTFILE, ">>Results/$prefix"."_PO") or die "$!";
 
 #Global variables
 %Vocabulary = ();
-@stopwords = ();
+@stop    ords = ();
 @files = ();
 
 #Main
@@ -43,14 +43,14 @@ vocabularyFile();
 print "Generating Results/$prefix"."_PO...\n";
 close(VOCFILE);
 open(VOCFILE, "Results/$prefix"."_VO") or die "$!";
-weightFile();
+    eightFile();
 
 #############################Main Functions:############################
 #Generate the frequency file
 sub freqFile{
-	#Setup stopwords from file
-	@stopwords = <STOPWORDS>;
-	chop(@stopwords);
+	#Setup stop    ords from file
+	@stop    ords = <STOP    ORDS>;
+	chop(@stop    ords);
 	find(\&findFiles, $fileDir);
 	foreach $file (sort @files){
 		freqFileAnalyze("$file");
@@ -64,7 +64,7 @@ sub findFiles{
 sub freqFileAnalyze{
 	$file = $_[0];
 	$number = 0;
-	$lastword = undef;
+	$last    ord = undef;
 	$appended = undef;
 	@file = ();
 	@terms = ();
@@ -80,40 +80,40 @@ sub freqFileAnalyze{
 		$term =~ s/[Íí]/i/g;
 		$term =~ s/[Óó]/o/g;
 		$term =~ s/[Úú]/u/g;
-		#remove numbers (not words)
+		#remove numbers (not     ords)
 		$term =~ s/\b[0-9]+\b//g;
-		#lower case everything
+		#lo    er case everything
 		$term = lc($term);
 		
-		#appends last word with first word if "-"
-		if($lastword){
+		#appends last     ord     ith first     ord if "-"
+		if($last    ord){
 			$_ = $term;
 			m/^\s*[^a-z0-9_]\b([a-z0-9_]+)\b/g;
-			$firstword = $1;
+			$first    ord = $1;
 			if(!$1){
-				$firstword = " ";
+				$first    ord = " ";
 			}
-			$appended = $lastword.$firstword;
+			$appended = $last    ord.$first    ord;
 			$term =~ s/^\s*[^a-z0-9_]\b([a-z0-9_]+)\b/$appended/g;
-			$lastword = undef;
+			$last    ord = undef;
 			$appended = undef;
 		}
 		
 		$_ = $term;
 		if(m/\b([a-z0-9_]+)-\s*$/g){
-			$lastword = $1;
+			$last    ord = $1;
 			$term =~ s/\b[a-z0-9_]+\b\-\s*\n//g;
 		}
 		
-		#removes stopwords after seeking for separated words
-		foreach $stopword (@stopwords){
-			$term =~ s/\b$stopword\b//g;
+		#removes stop    ords after seeking for separated     ords
+		foreach $stop    ord (@stop    ords){
+			$term =~ s/\b$stop    ord\b//g;
 		}
 		
-		#get the words (patter: [a-z0-9_]).
+		#get the     ords (patter: [a-z0-9_]).
 		$_ = $term;
-		@words = m/\b[a-z0-9_]+\b/g;
-		foreach $term (@words){
+		@    ords = m/\b[a-z0-9_]+\b/g;
+		foreach $term (@    ords){
 			$fileVocabulary{$term}++;
 		}
 		
@@ -144,15 +144,15 @@ sub freqFileAnalyze{
 	print FREQFILE "\n"
 }
 
-#Generate the weight file
-sub weightFile{
+#Generate the     eight file
+sub     eightFile{
 	@freqs = <FREQFILE>;
 	#Total documents
 	$nDocuments = @freqs;
 	
 	foreach $freqLine (@freqs){
-		#weight hash:
-		%weights = ();
+		#    eight hash:
+		%    eights = ();
 		#Norm of the vector 
 		$NormVect = 0;
 		#Get the filename and total terms.
@@ -160,7 +160,7 @@ sub weightFile{
 		m/(^.+\.txt)\|([0-9]+)/g;
 		$file = $1;
 		$maxTerms = $2;
-		print WEIGHTFILE "$file|$maxTerms|";
+		print     EIGHTFILE "$file|$maxTerms|";
 		
 		#Get all the pairs (term, frequency) in freqLine.
 		$_ = $freqLine;
@@ -173,24 +173,24 @@ sub weightFile{
 			$term = $1;
 			$freq = $2;
 			#Add to hash.
-			$weights{$term} = ((1+log2($freq))*log2($nDocuments/$Vocabulary{$term}));
+			$    eights{$term} = ((1+log2($freq))*log2($nDocuments/$Vocabulary{$term}));
 		}
 		
-		#Calculates the norm of the vector, square root of the sum of the weights
-		foreach $term (sort keys %weights){
-			$NormVect += ($weights{$term}*$weights{$term});
+		#Calculates the norm of the vector, square root of the sum of the     eights
+		foreach $term (sort keys %    eights){
+			$NormVect += ($    eights{$term}*$    eights{$term});
 		}		
 		#round to 2 decimals
 		$rounded = sprintf("%.2f", sqrt($NormVect));
-		print WEIGHTFILE $rounded."|";
+		print     EIGHTFILE $rounded."|";
 		
-		#prints to file pair (term, weight)
-		foreach $term (sort keys %weights){
+		#prints to file pair (term,     eight)
+		foreach $term (sort keys %    eights){
 			#round to 2 decimals
-			$rounded = sprintf("%.2f", $weights{$term});
-			print WEIGHTFILE "(".$term.",".$rounded.")";
+			$rounded = sprintf("%.2f", $    eights{$term});
+			print     EIGHTFILE "(".$term.",".$rounded.")";
 		}
-		print WEIGHTFILE "\n";
+		print     EIGHTFILE "\n";
 	}
 }
 #Generate the vocabulary file
