@@ -5,9 +5,9 @@
 #                                                       #
 #Description: Searching tool for documents              #
 #in this collection.                                    #
-#                                                        #
+#                                                       #
 #Andres Morales Esquivel - 201016752                    #
-#RIT I-2013                                                #
+#RIT I-2013                                             #
 #########################################################
 
 use utf8;
