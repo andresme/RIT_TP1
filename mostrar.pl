@@ -1,13 +1,13 @@
 #!/usr/bin/perl -w
 
 #########################################################
-#File: mostrar.pl                                        #
-#                                                        #
-#Description: Displays information about                 #
+#File: mostrar.pl                                       #
+#                                                       #
+#Description: Displays information about                #
 #created files by this set of tools.                    #
-#                                                        #
+#                                                       #
 #Andres Morales Esquivel - 201016752                    #
-#RIT I-2013                                                #
+#RIT I-2013                                             #
 #########################################################
 
 use utf8;
