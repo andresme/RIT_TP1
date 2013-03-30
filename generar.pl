@@ -1,5 +1,15 @@
 #!/usr/bin/perl -w
 
+#########################################################
+#File: generar.pl										#
+#														#
+#Description: Indexing tool for a document 				#
+#collection.											#
+#														#
+#Andres Morales Esquivel - 201016752					#
+#RIT I-2013												#
+#########################################################
+
 use utf8;
 use File::Find;
 require 'utils.pl';

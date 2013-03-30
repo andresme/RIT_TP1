@@ -1,5 +1,15 @@
 #!/usr/bin/perl -w
 
+#########################################################
+#File: buscar.pl										#
+#														#
+#Description: Searching tool for documents 	 			#
+#in this collection.									#
+#														#
+#Andres Morales Esquivel - 201016752					#
+#RIT I-2013												#
+#########################################################
+
 use utf8;
 use POSIX;
 use File::Spec;
@@ -32,23 +42,18 @@ open(PO, "Results/$prefix"."_PO") or die $!;
 $nDocuments = @weightFile;
 
 #Start
-commandSearch();
-
-sub commandSearch{
-	if($mod eq 'vec'){
-		loadVocabulary();
-		getTerms();
-		searchVect();
-		printRanking();
-	}
-
-	elsif($mod eq 'min'){
-		searchMin();
-	}
-	else{
-		print "Modality not found!";
-	}
+loadVocabulary();
+getTerms();
+if($mod eq 'vec'){
+	searchVect();
 }
+elsif($mod eq 'min'){
+	searchMin();
+}
+else{
+	print "Modality not found!";
+}
+printRanking();
 
 #load Vocabulary to hash
 sub loadVocabulary{
@@ -129,6 +134,7 @@ sub printRanking{
 	open_default_browser("Results/$prefixQuery"."_$htmlFile.html") or die $!;
 }
 
+#Vectorial Search Algorithm
 sub searchVect{
 	print "Searching using vectorial model...\n";
 	$QueryNormVect = 0;
@@ -185,6 +191,7 @@ sub searchVect{
 	}
 }
 
+#Min search Algorithm
 sub searchMin{
 	print "Searching using minimum model\n";
 	

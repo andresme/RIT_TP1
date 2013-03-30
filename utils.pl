@@ -1,13 +1,21 @@
 #!/usr/bin/perl -w
 
+#########################################################
+#File: utils.pl											#
+#														#
+#Description: Utilities used by other tools in perl		#
+#														#
+#Andres Morales Esquivel - 201016752					#
+#RIT I-2013												#
+#########################################################
 
-####################Aritmethic functions:###############################
 #Log base two
 sub log2 {
 	$number = $_[0];
 	return log($number)/log(2);
 }
 
+#Opens browser
 sub open_default_browser {
 	my $url = shift;
 	my $platform = $^O;
