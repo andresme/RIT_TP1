@@ -7,6 +7,7 @@
 #in this collection.                                    #
 #                                                       #
 #Andres Morales Esquivel - 201016752                    #
+#Sebastian Ramirez Rodriguez - 201052816				#
 #RIT I-2013                                             #
 #########################################################
 
@@ -146,13 +147,17 @@ sub searchVect{
         $queryTermFreq{$term}++;
     }
     
+    #ordenar de mayor a menor
     for $term (sort keys %queryTermFreq){
+		#asignar la frecuencia actual a la variable
         $freq = $queryTermFreq{$term};
+        #si existe entonces hace la formula
         if(exists $Vocabulary{$term}){
             $weights{$term} = ((1+log2($freq))*log2($nDocuments/$Vocabulary{$term}));
         }
     }
     
+    #ordena por pesos
     foreach $term (sort keys %weights){
         $QueryNormVect += ($weights{$term}*$weights{$term});
     }        
@@ -193,6 +198,38 @@ sub searchVect{
 
 #Min search Algorithm
 sub searchMin{
-    print "Searching using minimum model\n";
-    
+    print "Searching using minimum model...\n";
+    $minNumber = $queryTerms[0];
+    @queryOrdenado = sort @queryTerms;
+    print("minimo: $minNumber, query ordenado: @queryOrdenado \n");
+	foreach $file (@weightFile){
+        #resets acum
+        $acummulator = 0;
+        $total_acummulator = 0;
+        $itemCount = 0;
+        #get filepath
+        $_ = $file;
+        m/(.+)\|[0-9]+\|[0-9.]+/;
+        $path = $1;
+        #get norm of file
+        $_ = $file;
+        m/.+\|[0-9]+\|([0-9.]+)/;
+        $Norm = $1;
+        foreach $term (@queryOrdenado){
+            #get weight from PO file
+            $_ = $file;
+            $weight = $weights{$term};
+            if(m/$term,([0-9.]+)/){
+                $acummulator += $weight;
+            }
+            $total_acummulator += $weight;
+        }
+        if($itemCount >= $minNumber && $total_acummulator != 0){
+            $Similarity{$path} = $acummulator/log($total_acummulator);
+        }
+        else{
+            $Similarity{$path} = 0;
+        }
+    }
+		
 }

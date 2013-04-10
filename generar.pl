@@ -7,6 +7,7 @@
 #collection.											#
 #														#
 #Andres Morales Esquivel - 201016752					#
+#Sebastian Ramirez Rodriguez - 201052816				#
 #RIT I-2013												#
 #########################################################
 
