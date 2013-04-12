@@ -130,7 +130,7 @@ sub printRanking{
             #Print to file
             print HTML "<li>$pos: $sim \n";
             print HTML "    <ul>";
-            print HTML "        <li>Link: <a href=\"".File::Spec->rel2abs($sim)."\">Click para abrir el archivo</a></li>\n";
+            print HTML "        <li>Link: <a href=\"../$sim\">Click para abrir el archivo</a></li>\n";
             print HTML "        <li>Similaridad: $Similarity{$sim}</li>\n";
             print HTML "        <li>Fecha Creacion: $creation</li>\n";
             print HTML "        <li>Tamano: $fileSize bytes</li>\n";
