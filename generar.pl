@@ -196,7 +196,7 @@ sub     eightFile{
 #Generate the vocabulary file
 sub vocabularyFile{
 	foreach $key (sort keys %Vocabulary){
-		print VOCFILE "$key,$Vocabulary{$key}\n";
+        print VOCFILE "$key,$Vocabulary{$key}\n";
 	}
 }
 
