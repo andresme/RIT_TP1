@@ -17,14 +17,17 @@ use File::Spec;
 require 'utils.pl';
 
 #Arguments
-$mod = $ARGV[0];
-$begin = $ARGV[1];
-$end = $ARGV[2];
-$prefix = $ARGV[3];
-$prefixQuery = $ARGV[4];
-$rankFile = $ARGV[5];
-$htmlFile = $ARGV[6];
-$query = $ARGV[7];
+$stopwords = $ARGV[0];
+$mod = $ARGV[1];
+$begin = $ARGV[2];
+$end = $ARGV[3];
+$prefix = $ARGV[4];
+$prefixQuery = $ARGV[5];
+$rankFile = $ARGV[6];
+$htmlFile = $ARGV[7];
+$query = $ARGV[8];
+
+
 
 #File Handlers; File creation
 open(RANK, ">>Results/$prefixQuery"."_$rankFile") or die $!;
@@ -41,7 +44,7 @@ open(PO, "Results/$prefix"."_PO") or die $!;
 @freqFile = <FC>;
 @queryTerms = [];
 $nDocuments = @weightFile;
-
+$min = 0;
 #Start
 loadVocabulary();
 getTerms();
@@ -67,8 +70,23 @@ sub loadVocabulary{
 
 #get terms from query
 sub getTerms{
+	$query = cleanTerm($query);
+	$query = cleanStopWords($query, $stopwords);
     $_ = $query;
-    @queryTerms = m/\b[a-z0-9_]+\b/g;
+    if($mod eq 'vec'){
+		$query = cleanNumbers($query);
+		$_ = $query;
+		@queryTerms = m/\b[a-z0-9_]+\b/g;
+	}
+	elsif($mod eq 'min'){
+		$_ = $query;
+		@queryTerms = m/\b[a-z0-9_]+\b/g;
+		$min = $queryTerms[0];
+		$query = cleanNumbers($query);
+		$_ = $query;
+		@queryTerms = m/\b[a-z0-9_]+\b/g;
+	}
+    
 }
 
 #Prints the result ranking
@@ -82,15 +100,12 @@ sub printRanking{
         print HTML $line;
     }
     foreach $sim (sort {$Similarity{$b} cmp $Similarity{$a}} keys %Similarity){
-        if($pos++ >= $end){
-            print RANK $sim.":".$Similarity{$sim}."\n";
-        }
-        elsif($pos >= $begin){
-            print RANK $sim.":".$Similarity{$sim}."\n";
+        if($pos++ >= $begin && $pos <= $end){
             #File Information
             $creation = POSIX::strftime("%d/%m/%y", localtime((stat "./$sim")[9]));
             $fileSize = (stat "./$sim")[7];
             open(FILE, "./$sim");
+            @file = <FILE>;
             $lines = @file;
             $terms = 0;
             foreach $line (@freqFile){
@@ -127,12 +142,20 @@ sub printRanking{
             print HTML "        </li></ul>\n";
             print HTML "    </li>\n";
             print HTML "</ul></li>\n";
+            
         }
+        print RANK "$pos: $sim\n";
+        print RANK "Similaridad: $Similarity{$sim}</li>\n";
+        print RANK "Fecha Creacion: $creation</li>\n";
+        print RANK "Tamano: $fileSize bytes</li>\n";
+        print RANK "Lineas: $lines\n";
+        print RANK "Palabras diferentes: $terms\n";
+        print RANK "====================================================\n"
     }
     foreach $line (@footer){
         print HTML $line;
     }
-    open_default_browser("Results/$prefixQuery"."_$htmlFile.html") or die $!;
+    open_default_browser("Results/$prefixQuery"."_$htmlFile.html");
 }
 
 #Vectorial Search Algorithm
@@ -199,37 +222,36 @@ sub searchVect{
 #Min search Algorithm
 sub searchMin{
     print "Searching using minimum model...\n";
-    $minNumber = $queryTerms[0];
-    @queryOrdenado = sort @queryTerms;
-    print("minimo: $minNumber, query ordenado: @queryOrdenado \n");
-	foreach $file (@weightFile){
-        #resets acum
-        $acummulator = 0;
-        $total_acummulator = 0;
-        $itemCount = 0;
-        #get filepath
-        $_ = $file;
-        m/(.+)\|[0-9]+\|[0-9.]+/;
+    %freqQuery = ();
+    $nTerms = 0;
+    #freq(i,j) del query
+    foreach $term (sort @queryTerms){
+		$freqQuery{$term}++;
+	}
+	foreach $line (@freqFile){
+		$nTerms = 0;
+		$accumArriba = 0;
+		$accumAbajo = 0;
+		#get filepath
+        $_ = $line;
+        m/(.+)\|[0-9]+\|[0-9]+/;
         $path = $1;
-        #get norm of file
-        $_ = $file;
-        m/.+\|[0-9]+\|([0-9.]+)/;
-        $Norm = $1;
-        foreach $term (@queryOrdenado){
-            #get weight from PO file
-            $_ = $file;
-            $weight = $weights{$term};
-            if(m/$term,([0-9.]+)/){
-                $acummulator += $weight;
-            }
-            $total_acummulator += $weight;
-        }
-        if($itemCount >= $minNumber && $total_acummulator != 0){
-            $Similarity{$path} = $acummulator/log($total_acummulator);
-        }
-        else{
+        foreach $term (sort keys %freqQuery){
+			$_ = $line;
+			#search for terms in query in freq document
+			if(m/$term,([0-9]+)/){ 
+				#if match then start sum and count one match for min
+				$accumArriba += $freqQuery{$term};
+				$accumAbajo += $1;
+				$nTerms++;
+			}
+		}
+		#if matches are $min or more do the math
+		if($nTerms >= $min){
+			$Similarity{$path} = $accumArriba/log($accumAbajo);
+		}
+		else{
             $Similarity{$path} = 0;
         }
-    }
-		
+	}
 }

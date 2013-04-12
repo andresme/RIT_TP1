@@ -35,6 +35,7 @@ elsif($mod eq 'vocab'){
 elsif($mod eq 'esca'){
     $begin = $ARGV[2];
     $end = $ARGV[3];
+    showRankFile();
 }
 else{
     print "Modality not found";
@@ -105,5 +106,15 @@ sub showVocabFile{
 sub showRankFile{
     $begin = $ARGV[2];
     $end = $ARGV[3];
+    
+    print "Ranking file from $begin to $end inclusive\n";
+    foreach $line (@file){
+        $_ = $line;
+        if(m/([0-9]+): .+\.txt/){
+			if($1 >= $begin && $1 <= $end){
+				print $line;
+			}
+		}
+    }
 
 }
